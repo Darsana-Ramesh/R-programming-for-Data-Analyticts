@@ -1,0 +1,65 @@
+
+library(tree)
+library(ISLR)
+
+
+data(Carseats)
+
+High <- factor(ifelse(Carseats$Sales <= 8, "NO", "YES"))
+
+Carseats <- data.frame(Carseats, High)
+
+tree.carseats <- tree(High ~ . - Sales, data = Carseats)
+summary(tree.carseats)
+
+plot(tree.carseats)
+text(tree.carseats, pretty = 0)
+
+
+set.seed(2)
+train <- sample(1:nrow(Carseats), 200)
+
+Carseats.train <- Carseats[train, ]
+Carseats.test  <- Carseats[-train, ]
+High.test      <- Carseats$High[-train]
+
+
+tree.carseats <- tree(High ~ . - Sales, data = Carseats, subset = train)
+
+
+tree.pred <- predict(tree.carseats, Carseats.test, type = "class")
+table(tree.pred, High.test)
+
+mean(tree.pred == High.test)
+
+
+set.seed(3)
+cv.carseats <- cv.tree(tree.carseats, FUN = prune.misclass)
+
+names(cv.carseats)
+cv.carseats
+
+
+par(mfrow = c(1, 2))
+plot(cv.carseats$size, cv.carseats$dev, type = "b",
+     xlab = "Tree Size", ylab = "Deviance")
+
+
+plot(cv.carseats$k, cv.carseats$dev, type = "b",
+     xlab = "Cost Complexity (k)", ylab = "Deviance")
+
+
+best.size <- cv.carseats$size[which.min(cv.carseats$dev)]
+best.size
+
+prune.carseats <- prune.misclass(tree.carseats, best = best.size)
+
+
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+
+tree.pred <- predict(prune.carseats, Carseats.test, type = "class")
+table(tree.pred, High.test)
+
+mean(tree.pred == High.test)
+
