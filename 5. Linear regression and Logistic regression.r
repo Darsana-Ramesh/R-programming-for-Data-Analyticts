@@ -1,0 +1,105 @@
+#LINEAR REGRESSION AND LOGISTIC REGRESSION
+#===============================================
+
+#SIMPLE LINEAR REGRESSION
+library(ggplot2)
+ad<- read.csv("C:/Users/DELL/Downloads/advertising.csv")
+View(ad)
+
+t<-lm(Sales~TV,ad)
+summary(t)
+
+r<- lm(Sales~Radio,ad)
+summary(r)
+
+n<-lm(Sales~Newspaper,ad)
+summary(n)
+
+#MULTIPLE LINEAR REGRESSION
+tr<-lm(Sales~TV+Radio,ad)
+summary(tr)
+
+ggplot(data=ad,aes(y=Sales,x=TV+Radio))+geom_point(alpha=0.2)+geom_smooth(method="lm",se=FALSE)
+
+trn<-lm(Sales~TV+Radio+Newspaper,ad)
+summary(trn)
+
+ggplot(data=ad,aes(y=Sales,x=TV+Radio+Newspaper))+geom_point(alpha=0.2)+geom_smooth(method="lm",se=FALSE)
+
+#LINEAR REGRESSION WITH CATEGORICAL VARIABLE
+library(ISLR)
+data("Credit")
+str(Credit)
+
+gender<-ifelse(Credit$Gender=="Female", 1,0)
+df<-data.frame(Balance=Credit$Balance,Gender=Credit$Gender)
+df
+
+r<-lm(Balance~Gender,df)
+summary(r)
+
+#SIMPLE LOGISTIC REGRESSION
+data("Default")
+View(Default)
+
+b<-glm(default~balance,family="binomial",Default)
+summary(b)
+
+predict(b,data.frame(balance=c(1000)),type="response")
+predict(b,data.frame(balance=c(2000)),type="response")
+
+Default$default<-as.numeric(Default$default=="Yes")
+ggplot(data=Default,aes(y=default,x=balance))+geom_point(alpha=0.2)+geom_smooth(method="glm",se=FALSE, method.args=list(family=binomial))
+
+#TRAINING AND TESTING
+sample<-sample(c(TRUE,FALSE),nrow(Default),replace=T,prob=c(0.6,0.4))
+train<-Default[sample,]
+test<-Default[!sample,]
+
+tr<-glm(default~balance,family=binomial, train)
+summary(tr)
+
+pre<-predict(tr,test,type="response")
+pr<-ifelse(pre>0.5,1,0)
+cm<-table(predicted=pr,actual=test$default)
+cm
+accuracy<-sum(diag(cm)/sum(cm))
+accuracy
+
+b2<-glm(default~income,family="binomial",Default)
+summary(b2)
+ggplot(data=Default,aes(y=default,x=income))+geom_point(alpha=0.2)+geom_smooth(method="glm",se=FALSE, method.args=list(family=binomial))
+
+b3<-glm(default~student,family="binomial",Default)
+summary(b3)
+
+Default$student<-as.numeric(Default$student=="Yes")
+ggplot(data=Default,aes(y=default,x=student))+geom_point(alpha=0.2)+geom_smooth(method="glm",se=FALSE, method.args=list(family=binomial))
+
+#MULTIPLE LOGISTIC REGRESSION
+b4<-glm(default~student+balance,family="binomial",Default)
+summary(b4)
+Default$student<-as.numeric(Default$student=="Yes")
+ggplot(data=Default,aes(y=default,x=student+balance))+geom_point(alpha=0.2)+geom_smooth(method="glm",se=FALSE, method.args=list(family=binomial))
+
+#TRAING AND TESTING
+sample2<-sample(c(TRUE, FALSE),nrow(Default),replace=T,prob=c(0.6,0.4))
+sample2
+
+
+train1<-Default[sample2,]
+
+test1<-Default[!sample2,]
+tr2 <- glm(default ~ student + balance, family = binomial, data = train1)
+summary(tr2)
+
+pre<-predict(tr2,test1,type="response")
+pr<-ifelse(pre>0.5,1,0)
+cm<-table(predicted=pr,actual=test1$default)
+cm
+
+
+accuracy<-sum(diag(cm)/sum(cm))
+accuracy
+
+
