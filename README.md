@@ -10,6 +10,4 @@ This repository is dedicated to exploring **R programming** and enhancing my ski
 - Applying statistical concepts in R
 - Writing clean, reusable R code
 
-## Purpose
-The goal of this repository is to document my growth in **R programming**, practice key concepts, and showcase projects and experiments that I complete.
 
