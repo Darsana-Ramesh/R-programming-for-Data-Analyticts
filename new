@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class Wordcount2 {
+
     // Defines the Mapper class
     public static class Map extends Mapper <LongWritable, Text, Text, IntWritable> {
         
@@ -40,13 +41,67 @@ public class Wordcount2 {
                 
                 // Write the (word, 1) pair to the context (intermediate output)
                 context.write(word, one);
-                
-                // The code cuts off here in the image. The Map method would typically close with '}'
             }
-        } // Assuming 'map' method closes here
-    } // Assuming 'Map' class closes here
-    
-    // The main class (Wordcount2) would likely contain the 'main' method and job configuration
-    // The rest of the class is not visible in the image.
+        } 
+    } 
 
-} // Assuming 'Wordcount2' class closes here
+    // Defines the Reducer class
+    public static class Reduce extends Reducer <Text, IntWritable, Text, IntWritable> {
+        
+        // The reduce method sums up all the '1's associated with a specific word (Text key)
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+            throws IOException, InterruptedException {
+            
+            // Initialize sum for the current word
+            int sum = 0;
+            
+            // Iterate over all the '1' counts for the word
+            for (IntWritable val : values) {
+                // Add the count (which is always 1) to the sum
+                sum += val.get();
+            }
+            
+            // Write the final (word, total_count) pair to the output
+            context.write(key, new IntWritable(sum));
+        }
+    }
+    
+    // The main class contains the entry point and job configuration
+    public static void main(String[] args) throws Exception {
+        
+        // Create a new configuration object
+        Configuration conf = new Configuration();
+        
+        // Create a new job instance
+        Job job = new Job(conf, "Wordcount2");
+        
+        // Set the Jar by finding the current class
+        job.setJarByClass(Wordcount2.class);
+        
+        // Set a human-readable name for the job
+        job.setJobName("WordCounter");
+        
+        // Set the data types for the final output key and value
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        
+        // Set the data types for the Map output key and value (often the same as final output)
+        // job.setMapOutputKeyClass(Text.class); // Not strictly necessary if same as final output
+        // job.setMapOutputValueClass(IntWritable.class); // Not strictly necessary if same as final output
+
+        // Specify the Mapper and Reducer classes to use
+        job.setMapperClass(Map.class);
+        job.setReducerClass(Reduce.class);
+        
+        // Specify the Input and Output format classes
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+        
+        // Configure input path (args[0]) and output path (args[1])
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        
+        // Execute the job and wait for it to complete
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+} 
