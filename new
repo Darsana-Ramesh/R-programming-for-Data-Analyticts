@@ -1,0 +1,52 @@
+package wordcount2;
+
+import java.io.IOException;
+import java.util.*;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.*;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+public class Wordcount2 {
+    // Defines the Mapper class
+    public static class Map extends Mapper <LongWritable, Text, Text, IntWritable> {
+        
+        // Final variable to represent the count '1' for each word
+        private final static IntWritable one = new IntWritable(1);
+        
+        // Reusable Text object for the word key
+        private Text word = new Text();
+        
+        // The map method processes a single line of input (Text value)
+        public void map(LongWritable key, Text value, Context context) 
+            throws IOException, InterruptedException {
+            
+            // Convert the input line (Text) to a Java String
+            String line = value.toString();
+            
+            // Use StringTokenizer to break the line into individual words
+            StringTokenizer tokenizer = new StringTokenizer(line);
+            
+            // Loop while there are more words (tokens) in the line
+            while (tokenizer.hasMoreTokens()) {
+                
+                // Set the current word (token) as the output key
+                word.set(tokenizer.nextToken());
+                
+                // Write the (word, 1) pair to the context (intermediate output)
+                context.write(word, one);
+                
+                // The code cuts off here in the image. The Map method would typically close with '}'
+            }
+        } // Assuming 'map' method closes here
+    } // Assuming 'Map' class closes here
+    
+    // The main class (Wordcount2) would likely contain the 'main' method and job configuration
+    // The rest of the class is not visible in the image.
+
+} // Assuming 'Wordcount2' class closes here
